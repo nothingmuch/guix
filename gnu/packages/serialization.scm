@@ -40,10 +40,13 @@
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages curl)
   #:use-module (gnu packages databases)
   #:use-module (gnu packages documentation)
+  #:use-module (gnu packages gnunet)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages popt)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages perl))
@@ -331,6 +334,34 @@ it a convenient format to store user input files.")
               (sha256
                (base32
                 "1180ln8blrb0mwzpcf78k49hlki6di65q77rsvglf83kfcyh4d7z"))))))
+
+(define-public json-rpc-cpp
+  (package
+   (name "json-rpc-cpp")
+   (version "v1.2.0")
+   (home-page "https://github.com/cinemast/libjson-rpc-cpp.git")
+   (source (origin
+            (method git-fetch)
+            (uri (git-reference (url home-page) (commit version)))
+            (file-name (git-file-name name version))
+            (sha256
+             (base32
+              "1v98ll75dmbvqvcivqi6zy73gpg87l3a8x9n1046c2w34a2vrla3"))))
+   (build-system cmake-build-system)
+   (inputs
+    `(("argtable" ,argtable)
+      ;; ("catch2" ,catch-framework2) ;; tests try to download catch2 2.7.0 (fails due to lack of networking in build environment)
+      ("curl" ,curl)
+      ("jsoncpp" ,jsoncpp)
+      ("libmicrohttpd" ,libmicrohttpd)))
+   (arguments
+    `(
+      #:configure-flags '("-DBUILD_SHARED_LIBS:BOOL=YES" "-DJSONCPP_INCLUDE_PREFIX=json" "-DREDIS_SERVER=NO" "-DREDIS_CLIENT=NO" "-DCOMPILE_TESTS=NO")
+                        #:phases (modify-phases %standard-phases (delete 'check))))
+   (synopsis "C++ framework for json-rpc (json remote procedure call)")
+   (description "json-rpc-cpp provides cross platform JSON-RPC (remote
+procedure call) support for C++. It is fully JSON-RPC 2.0 & 1.0 compatible.")
+   (license license:expat)))
 
 (define-public capnproto
   (package
