@@ -1746,6 +1746,41 @@ sets, bitmaps and hyperloglogs.")
     (home-page "http://redis.io/")
     (license license:bsd-3)))
 
+(define-public libhiredis
+  (package
+   (name "libhiredis")
+   (version "f5f855c91239706b173e2412cea301f4a3643e2d") ;; cmake support not yet released
+   (source (origin
+
+           (method git-fetch)
+           (uri (git-reference
+                 (url "https://github.com/redis/hiredis.git")
+                 (commit version)))
+           (file-name (string-append name "-" version "-checkout"))
+           (sha256
+            (base32
+             "0ypgsc0hqzz9k17lsfmpcjn3gnnsibwnljvaqbcdm74vi41wmlrq"))))
+   (build-system cmake-build-system)
+
+   ;; TODO re-enable testing, which requires redis
+   ;; (native-inputs
+   ;; `(("redis" ,redis)))
+   (arguments
+    '(#:phases
+      (modify-phases %standard-phases
+                     (delete 'check))))
+   (home-page "https://redislabs.com/lp/hiredis/")
+   (synopsis
+    "Hiredis is a minimalistic C client for redis >= 1.2")
+   (description
+    "Hiredis provides minimal support for the protocol, but at the same
+     time it uses a high level printf-alike API in order to make it much
+     higher level than otherwise suggested by its minimal code base and
+     the lack of explicit bindings for every Redis command. Hiredis only
+     supports the binary-safe Redis protocol, so you can use it with any
+     Redis version >= 1.2.0.")
+   (license license:bsd-3)))
+
 (define-public kyotocabinet
   (package
     (name "kyotocabinet")
