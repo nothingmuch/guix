@@ -40,22 +40,28 @@
   #:use-module (guix build-system glib-or-gtk)
   #:use-module (guix utils)
   #:use-module (gnu packages)
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages crypto)
+  #:use-module (gnu packages curl)
   #:use-module (gnu packages databases)
+  #:use-module (gnu packages datastructures)
   #:use-module (gnu packages documentation)
   #:use-module (gnu packages dns)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages dbm)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages groff)
   #:use-module (gnu packages gtk)
+  #:use-module (gnu packages jemalloc)
   #:use-module (gnu packages libedit)
   #:use-module (gnu packages libevent)
   #:use-module (gnu packages libunwind)
@@ -63,6 +69,7 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages multiprecision)
   #:use-module (gnu packages networking)
+  #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages protobuf)
   #:use-module (gnu packages python)
@@ -71,6 +78,8 @@
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages readline)
+  #:use-module (gnu packages serialization)
+  #:use-module (gnu packages shells)
   #:use-module (gnu packages sphinx)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages textutils)
@@ -1095,3 +1104,96 @@ financial years, budget estimates, bankcard management and other
 information.")
     (home-page "http://grisbi.org")
     (license license:gpl2+)))
+
+(define libsecp256k1/blocksci
+  (package
+    (inherit libsecp256k1)
+    ;; BlockSci normally wants to build its own libsecp256k1 as a cmake external
+    ;; project however, this requires network access (for git), and even if the
+    ;; source directory is provided, fails to compile because lack of patching
+    ;; therefore we inherit guix's libsecp256k1 but apply the same configure
+    ;; flags as BlockSci's external/CMakeLists.txt (see also corresponding
+    ;; substitutions below in the blocksci package definition)
+    (arguments
+     `(#:configure-flags
+       `("--disable-shared"
+         "--disable-benchmark"
+         "--disable-tests"
+         "--disable-exhaustive-tests"
+         "--enable-module-recovery"
+         "--with-bignum=no")
+       #:make-flags
+       `("CFLAGS=-fPIC"
+         "CPPFLAGS=-fPIC")))))
+
+(define boost/blocksci
+  (package
+    (inherit boost)
+    ;; pin to old version because cmake 3.14 can't deal with 1.70,
+    ;; version 3.15.1 (inherit cmake-minimal) (did not investigate further)
+    ;; note that boost icu patch is omitted as blocksci does not require it
+    (version "1.69.0")
+    (source (origin
+              (method url-fetch)
+              (uri (let ((version-with-underscores
+                          (string-map (lambda (x) (if (eq? x #\.) #\_ x)) version)))
+                     (list (string-append "mirror://sourceforge/boost/boost/" version
+                                          "/boost_" version-with-underscores ".tar.bz2")
+                           (string-append "https://dl.bintray.com/boostorg/release/"
+                                          version "/source/boost_"
+                                          version-with-underscores ".tar.bz2"))))
+              (sha256
+               (base32
+                "01j4n142dz20lcgqji8d8hspp04p1nv7m8i6dz8w5lchfdhx8clg"))))))
+
+(define-public blocksci
+  (package
+    (name "blocksci")
+    (version "0.5.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/citp/BlockSci.git")
+             (commit (string-append "v" version))
+             (recursive? #t)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "18m76l6aa8sh2m57v2p3fyp356gx0fd5njfhqj60y0hx31j7v9bl"))))
+    (build-system cmake-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (delete 'check)
+         (add-after 'unpack 'unpack-secp256k1
+           (lambda* (#:key inputs #:allow-other-keys)
+             ;; disable building of libsecp256k1 as an external project due to
+             ;; lack of network access and because the scripts need to be patched
+             ;; instead it is provided by the libsecp256k1/blocksci input
+             (substitute* "external/CMakeLists.txt"
+               (("ExternalProject.*?\\(project_secp256k1") "message(")
+               (("add_dependencies(secp256k1 project_secp256k1)") "")
+               (("\\$\\{install_dir\\}") (assoc-ref inputs "libsecp256k1")))
+             #t)))))
+    (inputs
+     `(("libsecp256k1" ,libsecp256k1/blocksci)
+       ("boost" ,boost/blocksci)
+       ("curl" ,curl)
+       ("openssl" ,openssl)
+       ("jsoncpp" ,jsoncpp)
+       ("json-rpc-cpp" ,json-rpc-cpp)
+       ("snappy" ,snappy)
+       ("zlib" ,zlib)
+       ("lbzip2" ,lbzip2)
+       ("lz4" ,lz4)
+       ("zstd" ,zstd)
+       ("jemalloc" ,jemalloc)
+       ("sparsehash" ,sparsehash)))
+    (home-page "https://github.com/citp/BlockSci")
+    (synopsis "A high-performance tool for blockchain science and exploration")
+    (description
+     "BlockSci enables fast and expressive analysis of Bitcoin's and many other
+blockchains. It provides a custom in-memory blockchain database as well as an
+analysis library. BlockSci's core infrastructure is written in C++ and optimized
+for speed.")
+    (license license:gpl3+)))
