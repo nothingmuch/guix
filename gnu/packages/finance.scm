@@ -45,17 +45,21 @@
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages crypto)
+  #:use-module (gnu packages curl)
   #:use-module (gnu packages databases)
+  #:use-module (gnu packages datastructures)
   #:use-module (gnu packages documentation)
   #:use-module (gnu packages dns)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages dbm)
+  #:use-module (gnu packages gcc)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages groff)
   #:use-module (gnu packages gtk)
+  #:use-module (gnu packages jemalloc)
   #:use-module (gnu packages libedit)
   #:use-module (gnu packages libevent)
   #:use-module (gnu packages libunwind)
@@ -71,6 +75,7 @@
   #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages qt)
   #:use-module (gnu packages readline)
+  #:use-module (gnu packages serialization)
   #:use-module (gnu packages sphinx)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages textutils)
@@ -1060,6 +1065,7 @@ Its features are:
 @end itemize")
     (license license:agpl3+)))
 
+
 (define-public grisbi
   (package
     (name "grisbi")
@@ -1095,3 +1101,59 @@ financial years, budget estimates, bankcard management and other
 information.")
     (home-page "http://grisbi.org")
     (license license:gpl2+)))
+
+(define-public blocksci
+  (package
+    (name "blocksci")
+    (version "0.5.1") ;; 0.6
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/citp/BlockSci.git")
+             (commit (string-append "v" version))
+             (recursive? #t)))
+       (file-name (git-file-name name version))
+       (sha256
+        ;;(base32 "1ng7p53r22h4zpci5s3zwf53ngfi3xs3mvqn9nkmi3fh6bnw5paf")))) ;; 0.6
+        (base32 "18m76l6aa8sh2m57v2p3fyp356gx0fd5njfhqj60y0hx31j7v9bl"))))
+    (build-system cmake-build-system)
+    (arguments
+     `(;;#:configure-flags
+       ;;`("-DENABLE_PRECOMPILED_HEADERS=OFF")
+       #:phases
+       (modify-phases %standard-phases
+         (add-before 'configure 'use-guix-dependencies
+           (lambda _
+             ;; prevent cmake from attempting to download libsecp256k1, which
+             ;; is not included as a submodule in the git repository, and
+             ;; therefore would otherwise trigger a download attempt
+             (substitute* "external/CMakeLists.txt" (("ExternalProject.*?\\(project_secp256k1") "message("))
+             #t)))))
+    ;; (native-inputs `(("gcc-toolchain" ,gcc-toolchain-7)))
+    (native-inputs `(("gcc" ,gcc-7)))
+    (inputs
+     `(("libsecp256k1" ,(package (inherit libsecp256k1) (arguments `(#:configure-flags `("--enable-module-recovery")))))
+       ("boost" ,boost)
+       ("boost-sync" ,boost-sync)
+       ("curl" ,curl)
+       ("openssl" ,openssl)
+       ("jsoncpp" ,jsoncpp)
+       ("json-rpc-cpp" ,json-rpc-cpp)
+       ("snappy" ,snappy)
+       ("zlib" ,zlib)
+       ("lbzip2" ,lbzip2)
+       ("lz4" ,lz4)
+       ("zstd" ,zstd)
+       ("jemalloc" ,jemalloc)
+       ("sparsehash" ,sparsehash)
+       ("python" ,python)))
+    (home-page "https://github.com/citp/BlockSci")
+    (synopsis "A high-performance tool for blockchain science and exploration")
+    (description
+     "BlockSci enables fast and expressive analysis of Bitcoin’s and many other blockchains.
+It provides a custom in-memory blockchain database as well as an analysis library.
+BlockSci’s core infrastructure is written in C++ and optimized for speed.
+To make analysis more convenient, it provides Python bindings and a Jupyter notebook interface.")
+    (license (list license:gpl3+))))
+
