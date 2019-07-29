@@ -404,6 +404,37 @@ generation from a seed.  Your secret keys are encrypted and are never sent to
 other machines/servers.  Electrum does not download the Bitcoin blockchain.")
     (license license:expat)))
 
+(define-public electrum-personal-server
+  (package
+    (name "electrum-personal-server")
+    (version "0.1.7")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/chris-belcher/electrum-personal-server")
+             ;; note tag names are not consistent, most are "eps-v0.x.x"
+             (commit (string-append name "-v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0gm95cvgpal414hg5s5zdvka06pk9spijb2byy1sr5mpqxmd4kx9"))))
+    (build-system python-build-system)
+    (native-inputs
+     `(("python-pytest-runner" ,python-pytest-runner)
+       ("python-pytest" ,python-pytest)
+       ("python-wheel" ,python-wheel)))
+    (home-page "https://github.com/chris-belcher/electrum-personal-server")
+    (synopsis "Maximally lightweight electrum server for a single user")
+    (description
+     "Electrum Personal Server aims to make using Electrum bitcoin wallet more
+secure and more private. It makes it easy to connect your Electrum wallet to
+your own full node.
+
+It is an implementation of the Electrum server protocol which fulfills the
+specific need of using the Electrum wallet backed by a full node, but without
+the heavyweight server backend, for a single user.")
+    (license license:expat)))
+
 (define-public electron-cash
   (package
     (inherit electrum)
