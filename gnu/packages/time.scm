@@ -39,6 +39,7 @@
   #:use-module (guix git-download)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system python)
+  #:use-module (gnu packages astronomy)
   #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages perl)
@@ -233,6 +234,41 @@ datetime module, available in Python 2.3+.")
 
 (define-public python2-parsedatetime
   (package-with-python2 python-parsedatetime))
+
+(define-public python-convertdate
+  (package
+    (name "python-convertdate")
+    (version "2.1.3")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "convertdate" version))
+       (sha256
+        (base32
+         "0wwpgd9grla3bb85jmhi5jrd616q5r163cxx68krvqiidfk5pjn3"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         ;; tests fail due to missing tests package, but
+         ;;   guix import pypi tests
+         ;; fails to recognize dependencies
+         (delete 'check))))
+    (propagated-inputs
+     `(("python-ephem" ,python-ephem)
+       ("python-pytz" ,python-pytz)))
+    (home-page
+     "https://github.com/fitnr/convertdate")
+    (synopsis
+     "Converts between Gregorian dates and other calendar systems.")
+    (description
+     "Converts between Gregorian dates and other calendar systems.
+Calendars included: Baha'i, French Republican, Hebrew, Indian Civil,
+Islamic, ISO, Julian, Mayan and Persian.")
+    (license expat)))
+
+(define-public python2-convertdate
+  (package-with-python2 python-convertdate))
 
 (define-public python-tzlocal
   (package
