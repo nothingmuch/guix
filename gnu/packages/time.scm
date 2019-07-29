@@ -235,6 +235,50 @@ datetime module, available in Python 2.3+.")
 (define-public python2-parsedatetime
   (package-with-python2 python-parsedatetime))
 
+(define-public python-dateparser
+  (package
+    (name "python-dateparser")
+    (version "0.7.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "dateparser" version))
+       (sha256
+        (base32
+         "0ghr8zr5xarf9bcx4jp2zjc716fx9rpgmlbn9l5fia3l9vjipma2"))))
+    (build-system python-build-system)
+    ;; set time zone for tests
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (add-before 'check 'set-tz (lambda _ (setenv "TZ" "UTC") #t)))))
+    (propagated-inputs
+     `(("python-dateutil" ,python-dateutil)
+       ("python-pytz" ,python-pytz)
+       ("python-regex" ,python-regex)
+       ("python-tzlocal" ,python-tzlocal)))
+    (native-inputs
+     `(("python-coverage" ,python-coverage)
+       ("python-parameterized" ,python-parameterized)
+       ("python-nose" ,python-nose)
+       ("python-mock" ,python-mock)
+       ("python-convertdate" ,python-convertdate)))
+    (home-page
+     "https://github.com/scrapinghub/dateparser")
+    (synopsis
+     "Date parsing library designed to parse dates from HTML pages")
+    (description
+     "Date parsing library designed to parse dates from HTML pages")
+    (license bsd-3)))
+
+(define-public python2-dateparser
+  (package-with-python2
+   (package
+     (inherit python-dateparser)
+     (native-inputs
+      `(("python-umalqurra" ,python-umalqurra)
+        ,@(package-native-inputs python-dateparser))))))
+
 (define-public python-convertdate
   (package
     (name "python-convertdate")
