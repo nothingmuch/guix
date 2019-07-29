@@ -43,6 +43,7 @@
   #:use-module (gnu packages maths)
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system gnu)
+  #:use-module (guix build-system python)
   #:use-module (srfi srfi-1))
 
 (define-public cfitsio
@@ -289,3 +290,32 @@ Mechanics, Astrometry and Astrodynamics library.")
     (license (list license:lgpl2.0+
                    license:gpl2+)))) ; examples/transforms.c & lntest/*.c
 
+(define-public python-ephem
+  (package
+    (name "python-ephem")
+    (version "3.7.6.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "ephem" version))
+       (sha256
+        (base32
+         "1b0j08615dwfqx5nzjmhsxxv3b94il84yff0mq13x2gjvsqq4k3s"))))
+    (build-system python-build-system)
+    (home-page "http://rhodesmill.org/pyephem/")
+    (synopsis
+     "Compute positions of the planets and stars")
+    (description
+     "PyEphem provides basic astronomical computations for the Python
+programming language. Given a date and location on the Earth’s surface,
+it can compute the positions of the Sun and Moon, of the planets and
+their moons, and of any asteroids, comets, or earth satellites whose
+orbital elements the user can provide. Additional functions are provided
+to compute the angular separation between two objects in the sky, to
+determine the constellation in which an object lies, and to find the
+times at which an object rises, transits, and sets on a particular day.")
+    (license (list license:lgpl3+
+                   license:gpl3+))))
+
+(define-public python2-ephem
+  (package-with-python2 python-ephem))
