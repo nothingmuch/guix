@@ -270,6 +270,39 @@ Islamic, ISO, Julian, Mayan and Persian.")
 (define-public python2-convertdate
   (package-with-python2 python-convertdate))
 
+(define-public python-umalqurra
+  (package
+    (name "python-umalqurra")
+    (version "0.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "umalqurra" version))
+       (sha256
+        (base32
+         "0y76glwikmrsqazfv12p63izdqgis16r63dfkp1a3b88z4v6m7vi"))))
+    (build-system python-build-system)
+    (home-page
+     "https://github.com/tytkal/python-hijiri-ummalqura")
+    (synopsis
+     "Date Api that support Hijri Umalqurra calendar.")
+    (description
+     "Date Api that support Hijri Umalqurra calendar.
+Features:
+
+@itemize
+@item Convert Gregorian to Hijri
+@item Convert Hijri to Gregorian
+@item give the Arabic name of the Hijri month
+@item give the English name of the Gregorian month
+@item give the day name in Arabic and English
+@item give the current day both in Hijri and Gregorian
+@end itemize")
+    (license expat)))
+
+(define-public python2-umalqurra
+  (package-with-python2 python-umalqurra))
+
 (define-public python-tzlocal
   (package
     (name "python-tzlocal")
