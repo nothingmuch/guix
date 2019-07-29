@@ -1151,7 +1151,7 @@ information.")
 (define-public blocksci
   (package
     (name "blocksci")
-    (version "0.5.1")
+    (version "0.6")
     (source
      (origin
        (method git-fetch)
@@ -1161,7 +1161,7 @@ information.")
              (recursive? #t)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "18m76l6aa8sh2m57v2p3fyp356gx0fd5njfhqj60y0hx31j7v9bl"))))
+        (base32 "1ng7p53r22h4zpci5s3zwf53ngfi3xs3mvqn9nkmi3fh6bnw5paf"))))
     (build-system cmake-build-system)
     (arguments
      `(#:phases
