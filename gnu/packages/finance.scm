@@ -44,6 +44,7 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
+  #:use-module (gnu packages cmake)
   #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages crypto)
@@ -83,6 +84,7 @@
   #:use-module (gnu packages sphinx)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages textutils)
+  #:use-module (gnu packages time)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages upnp)
   #:use-module (gnu packages version-control)
@@ -1196,4 +1198,35 @@ information.")
 blockchains. It provides a custom in-memory blockchain database as well as an
 analysis library. BlockSci's core infrastructure is written in C++ and optimized
 for speed.")
+    (license license:gpl3+)))
+
+(define-public blockscipy
+  (package
+    (inherit blocksci)
+    (name "blockscipy")
+    (build-system python-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (add-after 'unpack 'enter-scripts-dir
+           (lambda _ (chdir "blockscipy") #t))
+         (add-after 'enter-scripts-dir 'remove-hardcoded-make-jobs-number
+           (lambda _ (substitute* "setup.py"
+                       (("-j4") (string-append
+                                 "-j"
+                                 (number->string (parallel-job-count))))) #t)))))
+    (native-inputs
+     `(("cmake" ,cmake-minimal)))
+    (inputs
+     `(("boost" ,boost/blocksci)
+       ("blocksci" ,blocksci)))
+    (propagated-inputs
+     `(("python-multiprocess" ,python-multiprocess)
+       ("python-requests" ,python-requests)
+       ("python-psutil" ,python-psutil)
+       ("python-pycrypto" ,python-pycrypto)
+       ("python-pandas" ,python-pandas)
+       ("python-dateparser" ,python-dateparser)))
+    (synopsis "A high-performance tool for blockchain science and exploration (python interface)")
+    (description "Python bindings and a Jupyter notebook interface for BlockSci.")
     (license license:gpl3+)))
