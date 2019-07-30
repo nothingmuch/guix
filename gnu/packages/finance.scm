@@ -1161,7 +1161,8 @@ information.")
              (recursive? #t)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "1ng7p53r22h4zpci5s3zwf53ngfi3xs3mvqn9nkmi3fh6bnw5paf"))))
+        (base32
+         "030p0yz97q6xrsd0ykq1axcc8n3aa3pcj0ixrvbi04axnih4x592"))))
     (build-system cmake-build-system)
     (arguments
      `(#:phases
