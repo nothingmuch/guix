@@ -1176,7 +1176,13 @@ information.")
                (("ExternalProject.*?\\(project_secp256k1") "message(")
                (("add_dependencies(secp256k1 project_secp256k1)") "")
                (("\\$\\{install_dir\\}") (assoc-ref inputs "libsecp256k1")))
-             #t)))))
+             ;; disable hard coded building of non-portable binaries
+             (substitute* "src/CMakeLists.txt"
+               (("set\\(CMAKE_CXX_FLAGS \"\\$\\{CMAKE_CXX_FLAGS\\} -march=native -mtune=native\"\\)") ""))
+             #t)))
+       #:configure-flags
+       ;; disable building of non portable rocksdb (also -march=native)
+       `("-DPORTABLE=ON")))
     (inputs
      `(("libsecp256k1" ,libsecp256k1/blocksci)
        ("boost" ,boost/blocksci)
