@@ -38,8 +38,10 @@
   #:use-module (guix build-system cmake)
   #:use-module (guix build-system python)
   #:use-module (guix build-system glib-or-gtk)
+  #:use-module (guix build utils)
   #:use-module (guix utils)
   #:use-module (gnu packages)
+  #:use-module (gnu packages autotools)
   #:use-module (gnu packages base)
   #:use-module (gnu packages boost)
   #:use-module (gnu packages check)
@@ -72,6 +74,7 @@
   #:use-module (gnu packages qt)
   #:use-module (gnu packages readline)
   #:use-module (gnu packages sphinx)
+  #:use-module (gnu packages sqlite)
   #:use-module (gnu packages texinfo)
   #:use-module (gnu packages textutils)
   #:use-module (gnu packages tls)
@@ -1092,3 +1095,90 @@ financial years, budget estimates, bankcard management and other
 information.")
     (home-page "http://grisbi.org")
     (license license:gpl2+)))
+
+(define-public c-lightning
+  (package
+    (name "c-lightning")
+    (version "0.7.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/ElementsProject/lightning.git")
+             (commit (string-append "v" version))
+             (recursive? #t)))
+       (sha256
+        (base32
+         "08spadqk4ic3cz7wl2slndc216axj6h4pgd1rcmzdviwj7bs4f24"))))
+    (build-system gnu-build-system)
+    (arguments
+     `(#:phases
+       (modify-phases %standard-phases
+         (add-after 'bootstrap 'bootstrap-external
+           (lambda _
+             ;; bootstrap external source to ensure generated scripts are
+             ;; patched during standard phase
+             (with-directory-excursion "external/libwally-core"
+               (invoke (which "bash") "./tools/autogen.sh"))
+             ;; and prevent it from being rerun during build phase
+             (substitute* "external/Makefile"
+                 (("&& ./tools/autogen.sh &&") "&&"))))
+         (add-before 'configure 'patch-source-files-some-more
+           (lambda _
+             (substitute* "configure"
+               (("\\$\\(which \\$p\\)") "$(command -v)"))
+             ;; version is normally set using git describe
+             (substitute* "Makefile"
+               (("VERSION=.*") ,(string-append "VERSION=v" version)))
+             #t))
+         ;; c-lightning hasa custom ./configure script, these are just the
+         ;; relevant parts of the gnu-build-system configure phase
+         (replace 'configure
+           (lambda* (#:key build target native-inputs inputs outputs
+                           (configure-flags '()) out-of-source?
+                           #:allow-other-keys)
+             (let* ((prefix     (assoc-ref outputs "out"))
+                    (bash (which "bash"))
+                    (flags      `(,(string-append "--prefix=" prefix)
+                                  "CC=gcc"
+                                  ,@configure-flags))
+                    (abs-srcdir (getcwd))
+                    (srcdir     (if out-of-source?
+                                    (string-append "../" (basename abs-srcdir))
+                                    ".")))
+               (format #t "source directory: ~s (relative from build: ~s)~%"
+                       abs-srcdir srcdir)
+               (if out-of-source?
+                   (begin
+                     (mkdir "../build")
+                     (chdir "../build")))
+               (format #t "build directory: ~s~%" (getcwd))
+               (format #t "configure flags: ~s~%" flags)
+
+               ;; required for libwally configuration
+               (if build (setenv "BUILD" build))
+               (setenv "CONFIG_SHELL" bash)
+               (setenv "PYTHON_VERSION" "3")
+               (apply invoke bash
+                      (string-append srcdir "/configure")
+                      flags))))
+         ;; many python packages required for integration tests
+         (delete 'check))))
+    (native-inputs
+     `(("autoconf" ,autoconf)
+       ("automake" ,automake)
+       ("libtool" ,libtool)
+       ("python" ,python)
+       ("python-mako" ,python-mako)))
+    (inputs
+     `(("gmp" ,gmp)
+       ("sqlite" ,sqlite-3.26.0)
+       ("zlib" ,zlib)
+       ("libsodium" ,libsodium)))
+    (synopsis "a Lightning Network implementation in C ")
+    (description "c-lightning is a standard compliant implementation of the
+Lightning Network protocol. The Lightning Network is a scalability solution for
+Bitcoin, enabling secure and instant transfer of funds between any two parties
+for any amount.")
+    (home-page "https://github.com/ElementsProject/lightning")
+    (license (list license:expat license:cc0 license:lgpl2.1 license:lgpl3))))
