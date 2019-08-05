@@ -1182,7 +1182,7 @@ information.")
              #t)))
        #:configure-flags
        ;; disable building of non portable rocksdb (defaults to -march=native)
-       `("-DPORTABLE=ON")))
+       `("-DCMAKE_BUILD_TYPE=Debug" "-DPORTABLE=ON")))
     (inputs
      `(("libsecp256k1" ,libsecp256k1/blocksci)
        ("boost" ,boost/blocksci)
