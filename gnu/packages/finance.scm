@@ -1156,7 +1156,7 @@ information.")
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/citp/BlockSci.git")
-             (commit (string-append "v" version))
+             (commit version)
              (recursive? #t)))
        (file-name (git-file-name name version))
        (sha256
