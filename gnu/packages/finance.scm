@@ -1220,7 +1220,9 @@ for speed.")
            (lambda _ (substitute* "setup.py"
                        (("-j4") (string-append
                                  "-j"
-                                 (number->string (parallel-job-count))))) #t)))))
+                                 (number->string (parallel-job-count))))) #t))
+         (replace 'build
+           (lambda _ (invoke "python" "./setup.py" "build" "--debug"))))))
     (native-inputs
      `(("cmake" ,cmake-minimal)))
     (inputs
