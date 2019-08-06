@@ -1145,8 +1145,7 @@ information.")
                                           version "/source/boost_"
                                           version-with-underscores ".tar.bz2"))))
               (sha256
-               (base32
-                "01j4n142dz20lcgqji8d8hspp04p1nv7m8i6dz8w5lchfdhx8clg"))))))
+               (base32 "01j4n142dz20lcgqji8d8hspp04p1nv7m8i6dz8w5lchfdhx8clg"))))))
 
 (define-public blocksci
   (package
