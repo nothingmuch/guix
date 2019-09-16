@@ -16045,3 +16045,29 @@ one-off scripts.")
 time-or-computationally-expensive properties quick and easy and works in Python
 2 or 3.")
     (license license:bsd-3)))
+
+(define-public python-vega
+  (package
+    (name "python-vega")
+    (version "2.5.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "vega" version))
+       (sha256
+        (base32
+         "07lff8gpx2x34yikadbg4w5ra0drzvidcgc6w00yjfkd3b8c040r"))))
+    (build-system python-build-system)
+    (home-page "http://github.com/vega/ipyvega")
+    (propagated-inputs
+     `(("python-pandas" ,python-pandas)
+       ("python-ipython" ,python-ipython)
+       ("python-ipywidgets" ,python-ipywidgets)))
+    (native-inputs
+     `(("python-pytest" ,python-pytest)
+       ("python-pytest-runner" ,python-pytest-runner)))
+    (synopsis
+     "IPyVega: An IPython/Jupyter widget for Vega 5 and Vega-Lite 3")
+    (description
+     "IPyVega: An IPython/Jupyter widget for Vega 5 and Vega-Lite 3")
+    (license license:bsd-3)))
