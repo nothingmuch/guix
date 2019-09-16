@@ -16115,3 +16115,38 @@ time-or-computationally-expensive properties quick and easy and works in Python
     (description
      "PuLP is an LP modeler written in python. PuLP can generate MPS or LP files and call GLPK, COIN CLP/CBC, CPLEX, and GUROBI to solve linear problems.")
     (license license:bsd-3)))
+
+(define-public python-xarray
+  (package
+    (name "python-xarray")
+    (version "0.12.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "xarray" version))
+        (sha256
+          (base32
+            "0mnsax9kqfyxlr83fvg6fbhwn2r5b8110yv2l9bwp2lqmw8fc44k"))))
+    (build-system python-build-system)
+    (arguments
+     `(#:phases (modify-phases %standard-phases
+                  (replace 'check
+                    (lambda _
+                      (invoke "pytest" "-vv" "-k"
+                              (string-append
+                               ;; XXX: These tests fail when using Pytest 4.x and
+                               ;; Babel 2.6.0.  Try removing this for later versions.
+                               "not test_download_from_github"
+                               " and not test_download_from_github_load_without_cache")))))))
+    (native-inputs
+     `(("python-pytest" ,python-pytest)
+       ("python-pytest-runner" ,python-pytest-runner)))
+    (propagated-inputs
+      `(("python-numpy" ,python-numpy)
+        ("python-pandas" ,python-pandas)))
+    (home-page "https://github.com/pydata/xarray")
+    (synopsis
+      "N-D labeled arrays and datasets in Python")
+    (description
+      "N-D labeled arrays and datasets in Python")
+    (license license:asl2.0)))
