@@ -16175,3 +16175,28 @@ time-or-computationally-expensive properties quick and easy and works in Python
     (synopsis "Scipy trait types")
     (description "Scipy trait types")
     (license license:bsd-3)))
+
+(define-public python-bqplot
+  (package
+    (name "python-bqplot")
+    (version "0.11.7")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "bqplot" version))
+        (sha256
+          (base32
+            "0s8mpbjdxw5y12nwzbslydkzxgqc8glmqmkg6l9ns4y84vnq9zrw"))))
+    (build-system python-build-system)
+    (propagated-inputs
+      `(("python-ipywidgets" ,python-ipywidgets)
+        ("python-numpy" ,python-numpy)
+        ("python-pandas" ,python-pandas)
+        ;; ("python-traitlets" ,python-traitlets)
+        ("python-traittypes" ,python-traittypes)))
+    (home-page "https://github.com/bloomberg/bqplot")
+    (synopsis
+      "Interactive plotting for the Jupyter notebook, using d3.js and ipywidgets.")
+    (description
+      "Interactive plotting for the Jupyter notebook, using d3.js and ipywidgets.")
+    (license license:asl2.0)))
