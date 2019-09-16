@@ -16071,3 +16071,47 @@ time-or-computationally-expensive properties quick and easy and works in Python
     (description
      "IPyVega: An IPython/Jupyter widget for Vega 5 and Vega-Lite 3")
     (license license:bsd-3)))
+
+(define-public python-pulp
+  (package
+    (name "python-pulp")
+    (version "1.6.10")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (pypi-uri "PuLP" version ".zip"))
+       (sha256
+        (base32
+         "0cksgmxq5sw40vyan03nw809anwsad4g51qf7bh13a0jpypshayx"))
+       (modules '((guix build utils)))
+       (snippet
+        '(begin
+           ;; Remove included CBC solver binaries
+           (for-each delete-file-recursively
+                     (find-files "." "solverdir" #:directories? #t))
+           #t))))
+    (build-system python-build-system)
+    (native-inputs
+     `(("unzip" ,unzip)))
+    (propagated-inputs
+     `(("python-pyparsing" ,python-pyparsing)))
+    (arguments
+     '(#:phases
+       (modify-phases %standard-phases
+         (add-before 'build 'remove-solvers-from-setup
+           (lambda _
+             (substitute* "setup.py"
+               (("'pulp.solverdir") "#'pulp.solverdir")
+               (("packages = \\['pulp',") "packages = ['pulp'],"))
+             #t))
+
+         ;;(replace 'check
+           ;;(lambda _
+         ;;(invoke "python" "-m" "pulp.pulp")))
+         )))
+    (home-page "https://github.com/coin-or/pulp")
+    (synopsis
+     "PuLP is an LP modeler written in python. PuLP can generate MPS or LP files and call GLPK, COIN CLP/CBC, CPLEX, and GUROBI to solve linear problems.")
+    (description
+     "PuLP is an LP modeler written in python. PuLP can generate MPS or LP files and call GLPK, COIN CLP/CBC, CPLEX, and GUROBI to solve linear problems.")
+    (license license:bsd-3)))
