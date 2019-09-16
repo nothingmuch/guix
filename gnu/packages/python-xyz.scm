@@ -16150,3 +16150,28 @@ time-or-computationally-expensive properties quick and easy and works in Python
     (description
       "N-D labeled arrays and datasets in Python")
     (license license:asl2.0)))
+
+(define-public python-traittypes
+  (package
+    (name "python-traittypes")
+    (version "0.2.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "traittypes" version))
+        (sha256
+          (base32
+            "1mlv93irdrgxrhnhq3ksi9585d55bpi4mv9dha4p8gkkjiia4vxy"))))
+    (build-system python-build-system)
+    (native-inputs
+     `(("python-nose" ,python-nose)))
+    (propagated-inputs
+      `(("python-numpy" ,python-numpy)
+        ("python-pandas" ,python-pandas)
+        ("python-pytest" ,python-pytest)
+        ("python-pytest" ,python-traitlets)
+        ("python-xarray" ,python-xarray)))
+    (home-page "http://ipython.org")
+    (synopsis "Scipy trait types")
+    (description "Scipy trait types")
+    (license license:bsd-3)))
