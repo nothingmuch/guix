@@ -17871,3 +17871,25 @@ For the most part it's transliterated from C, the major differences are:
       (propagated-inputs
        `(("python2-enum34" ,python2-enum34)
          ,@(package-propagated-inputs base))))))
+
+(define-public python-shutilwhich
+(package
+  (name "python-shutilwhich")
+  (version "1.1.0")
+  (source
+   (origin
+     (method url-fetch)
+     (uri (pypi-uri "shutilwhich" version))
+     (sha256
+      (base32
+       "1ijdnvn101ixwhayd4x4khf73xwhj33vhyv1z8qgchhy8v33j7yv"))))
+  (build-system python-build-system)
+  (home-page "https://github.com/mbr/shutilwhich")
+  (synopsis
+   "@code{shutil.which} for those not using Python 3.3 yet")
+  (description
+   "A copy & paste backport of Python 3.3's @code{shutil.which} function.")
+  (license license:psfl)))
+
+(define-public python2-shutilwhich
+  (package-with-python2 python-shutilwhich))
