@@ -32,12 +32,14 @@
   #:use-module (guix git-download)
   #:use-module (guix build-system cmake)
   #:use-module (gnu packages)
+  #:use-module (gnu packages check)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages lua)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages python)
   #:use-module (gnu packages python-crypto)
   #:use-module (gnu packages python-web)
+  #:use-module (gnu packages python-xyz)
   #:use-module (gnu packages ninja)
   #:use-module (guix build-system gnu)
   #:use-module (guix build-system python))
@@ -282,3 +284,31 @@ Service.  It allows you to checkout, commit, perform reviews etc.  The vast
 majority of the OBS functionality is available via commands and the rest can
 be reached via direct API calls.")
     (license license:gpl2+)))
+
+(define-public python-compiledb
+  (package
+    (name "python-compiledb")
+    (version "0.10.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (pypi-uri "compiledb" version))
+        (sha256
+          (base32 "0vlngsdxfakyl8b7rnvn8h3l216lhbrrydr04yhy6kd03zflgfq6"))))
+    (build-system python-build-system)
+    (propagated-inputs
+      `(("python-bashlex" ,python-bashlex)
+        ("python-click" ,python-click)
+        ("python-shutilwhich" ,python-shutilwhich)))
+    (native-inputs
+      `(("python-pytest" ,python-pytest)))
+    (home-page
+      "https://github.com/nickdiego/compiledb")
+    (synopsis
+      "Generate Clang JSON Compilation Database files for make-based build systems")
+    (description
+     "@code{compiledb} provides a @code{make} python wrapper script which,
+besides executing the make build command, updates the JSON compilation
+database file corresponding to that build, resulting in a command-line
+interface similar to Bear.")
+    (license license:gpl3)))
